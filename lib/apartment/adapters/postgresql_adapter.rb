@@ -94,19 +94,9 @@ module Apartment
       end
 
       def create_tenant_command(conn, tenant)
-        # NOTE: This was causing some tests to fail because of the database strategy for rspec
-        if ActiveRecord::Base.connection.open_transactions.positive?
-          conn.execute(%(CREATE SCHEMA "#{tenant}"))
-        else
-          schema = %(BEGIN;
-          CREATE SCHEMA "#{tenant}";
-          COMMIT;)
-
-          conn.execute(schema)
-        end
-      rescue *rescuable_exceptions => e
-        rollback_transaction(conn)
-        raise e
+        # As original apartment gem 2.2.0
+        # https://github.com/influitive/apartment/blob/v2.2.0/lib/apartment/adapters/postgresql_adapter.rb#L84
+        conn.execute(%{CREATE SCHEMA "#{tenant}"})
       end
 
       def rollback_transaction(conn)
